@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HydroSim — Caudal de Ríos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<!-- ───────────── HEADER ───────────── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 28 Q10 14 20 20 Q30 26 36 12" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M4 34 Q10 22 20 26 Q30 30 36 20" stroke="#818CF8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+          <circle cx="20" cy="20" r="3" fill="#38BDF8"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">HydroSim</div>
+        <div class="logo-sub">Simpson 1/3 · Caudal Hidráulico</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-blue">Métodos Numéricos II</span>
+      <span class="badge badge-purple">FES Acatlán</span>
+    </div>
+  </div>
+</header>
+
+<!-- ───────────── HERO ───────────── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Simulador Hidráulico Profesional</div>
+    <h1 class="hero-title">Estimación de<br><span class="gradient-text">Caudal de Ríos</span></h1>
+    <p class="hero-desc">Integración numérica por el Método de Simpson 1/3 aplicada al aforo de ríos. Ingresa tus datos hidráulicos y obtén el caudal, área transversal y velocidad promedio con visualización completa.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">1/3</span><span class="stat-label">Simpson</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-val">O(h⁴)</span><span class="stat-label">Precisión</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-val">m³/s</span><span class="stat-label">Resultado</span></div>
+    </div>
+  </div>
+  <div class="river-visual">
+    <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" class="river-svg">
+      <defs>
+        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#0C4A6E" stop-opacity="0.9"/>
+        </linearGradient>
+        <linearGradient id="bedGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#78350F"/>
+          <stop offset="100%" stop-color="#451A03"/>
+        </linearGradient>
+      </defs>
+      <!-- River bed -->
+      <path d="M0 80 Q60 120 120 110 Q180 100 250 130 Q320 155 380 120 Q440 90 500 100 L500 160 L0 160 Z" fill="url(#bedGrad)"/>
+      <!-- Water surface -->
+      <path d="M0 40 Q80 30 160 45 Q240 60 320 38 Q400 20 500 35 L500 100 Q440 90 380 120 Q320 155 250 130 Q180 100 120 110 Q60 120 0 80 Z" fill="url(#waterGrad)" opacity="0.85"/>
+      <!-- Wave lines -->
+      <path d="M20 55 Q80 45 140 55 Q200 65 260 50" stroke="#7DD3FC" stroke-width="1.5" fill="none" opacity="0.5" class="wave"/>
+      <path d="M240 42 Q320 30 400 44 Q450 50 490 40" stroke="#7DD3FC" stroke-width="1.5" fill="none" opacity="0.4" class="wave2"/>
+      <!-- Measurement lines -->
+      <line x1="80" y1="40" x2="80" y2="112" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
+      <line x1="200" y1="35" x2="200" y2="128" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
+      <line x1="320" y1="38" x2="320" y2="145" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
+      <line x1="420" y1="32" x2="420" y2="118" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
+      <!-- Labels -->
+      <text x="80" y="28" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₁</text>
+      <text x="200" y="22" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₂</text>
+      <text x="320" y="25" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₃</text>
+      <text x="420" y="18" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₄</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ───────────── MAIN LAYOUT ───────────── -->
+<main class="main-layout">
+
+  <!-- ── LEFT: INPUT PANEL ── -->
+  <aside class="panel panel-input">
+    <div class="panel-header">
+      <div class="panel-icon">⚙</div>
+      <div>
+        <div class="panel-title">Datos Hidráulicos</div>
+        <div class="panel-subtitle">Ingresa las mediciones del río</div>
+      </div>
+    </div>
+
+    <!-- Ejemplo rápido -->
+    <button class="btn-example" onclick="cargarEjemplo()">
+      <span>⚡</span> Cargar datos de ejemplo
+    </button>
+
+    <!-- Número de secciones -->
+    <div class="field-group">
+      <label class="field-label">Número de puntos de medición</label>
+      <div class="field-hint">Simpson 1/3 requiere número <strong>impar</strong> de puntos (mínimo 3).</div>
+      <div class="n-selector">
+        <button class="n-btn" onclick="cambiarN(-2)">−</button>
+        <span class="n-display" id="n-display">7</span>
+        <button class="n-btn" onclick="cambiarN(2)">+</button>
+      </div>
+    </div>
+
+    <!-- Tabla de datos -->
+    <div class="field-group">
+      <label class="field-label">Tabla de Mediciones</label>
+      <div class="table-wrapper">
+        <table class="input-table" id="input-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Posición (m)</th>
+              <th>Profundidad (m)</th>
+              <th>Velocidad (m/s)</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botón calcular -->
+    <button class="btn-calc" id="btn-calc" onclick="calcular()">
+      <span class="btn-calc-icon">∫</span>
+      <span>Calcular Caudal</span>
+    </button>
+
+    <!-- Error box -->
+    <div class="error-box hidden" id="error-box">
+      <div class="error-icon">⚠</div>
+      <div id="error-msg"></div>
+    </div>
+  </aside>
+
+  <!-- ── RIGHT: RESULTS PANEL ── -->
+  <section class="panel panel-results" id="results-panel">
+    
+    <!-- Placeholder -->
+    <div class="placeholder" id="placeholder">
+      <div class="placeholder-icon">
+        <svg viewBox="0 0 80 80" fill="none">
+          <circle cx="40" cy="40" r="36" stroke="#1E3A5F" stroke-width="2"/>
+          <path d="M20 50 Q30 30 40 38 Q50 46 60 28" stroke="#0EA5E9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 56 Q30 40 40 44 Q50 48 60 36" stroke="#818CF8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="placeholder-title">Listo para calcular</div>
+      <div class="placeholder-desc">Ingresa los datos hidráulicos del río en el panel izquierdo y presiona "Calcular Caudal" para ver los resultados, gráficas y análisis completo.</div>
+    </div>
+
+    <!-- Contenido de resultados (oculto hasta calcular) -->
+    <div id="results-content" class="hidden">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-main">
+          <div class="kpi-label">Caudal Total Q</div>
+          <div class="kpi-value" id="kpi-caudal">—</div>
+          <div class="kpi-unit">m³/s</div>
+          <div class="kpi-badge" id="kpi-categoria">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Área Transversal</div>
+          <div class="kpi-value kpi-blue" id="kpi-area">—</div>
+          <div class="kpi-unit">m²</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Velocidad Promedio</div>
+          <div class="kpi-value kpi-purple" id="kpi-vel">—</div>
+          <div class="kpi-unit">m/s</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Prof. Máxima</div>
+          <div class="kpi-value kpi-pink" id="kpi-prof">—</div>
+          <div class="kpi-unit">m</div>
+        </div>
+      </div>
+
+      <!-- Interpretación -->
+      <div class="interpretation-box" id="interpretation-box">
+        <div class="interp-icon">🌊</div>
+        <div>
+          <div class="interp-title" id="interp-titulo">—</div>
+          <div class="interp-desc" id="interp-desc">—</div>
+        </div>
+      </div>
+
+      <!-- Paso a Paso Simpson -->
+      <div class="section-title">
+        <span class="section-num">01</span>
+        Desarrollo de Simpson 1/3
+      </div>
+      <div class="formula-box">
+        <div class="formula-title">Fórmula general</div>
+        <div class="formula">∫ f(x)dx ≈ (h/3) · [f(x₀) + 4·f(x₁) + 2·f(x₂) + 4·f(x₃) + ... + f(xₙ)]</div>
+      </div>
+      <div class="steps-table-wrapper" id="steps-table"></div>
+
+      <!-- Fórmulas del cálculo -->
+      <div class="calc-steps" id="calc-steps-box"></div>
+
+      <!-- Gráficas -->
+      <div class="section-title">
+        <span class="section-num">02</span>
+        Visualizaciones Gráficas
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Perfil Transversal del Río</div>
+          <div class="chart-wrap"><canvas id="chart-perfil"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Distribución de Velocidades</div>
+          <div class="chart-wrap"><canvas id="chart-vel"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Área Integrada (Profundidades)</div>
+          <div class="chart-wrap"><canvas id="chart-area"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Caudal por Segmento (V×D)</div>
+          <div class="chart-wrap"><canvas id="chart-caudal"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Tabla de resultados -->
+      <div class="section-title">
+        <span class="section-num">03</span>
+        Tabla de Resultados Detallada
+      </div>
+      <div class="res-table-wrapper" id="res-table"></div>
+
+      <!-- Exportar -->
+      <div class="section-title">
+        <span class="section-num">04</span>
+        Exportar Resultados
+      </div>
+      <div class="export-row">
+        <button class="btn-export btn-pdf" onclick="exportarPDF()">
+          <span>📄</span> Exportar PDF
+        </button>
+        <button class="btn-export btn-excel" onclick="exportarExcel()">
+          <span>📊</span> Exportar Excel
+        </button>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- ───────────── FOOTER ───────────── -->
+<footer class="footer">
+  <div class="footer-inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>HydroSim · Simuladora de Caudal · Método de Simpson 1/3</div>
+    <div style="text-align: right;">
+      FES Acatlán — UNAM · Métodos Numéricos II<br>
+      <span style="color: #38BDF8; font-weight: 600; font-size: 0.9em;">Alumnas: Guerrero Montes Nora y Carrillo Acevedo Michelle</span>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
