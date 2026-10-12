@@ -54,7 +54,7 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Matriz 5x5 Estelar (AQUÍ ESTABA EL ERROR: Faltaban estas líneas de dimensiones) */
+/* Matriz 5x5 Estelar */
 #star-map {
     display: grid;
     grid-template-columns: repeat(5, 60px);
@@ -76,8 +76,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 18px;
     box-sizing: border-box;
     border: 1px solid #1e293b;
 }
@@ -91,34 +90,29 @@ h1 {
     font-weight: bold;
 }
 
-/* Estados de celdas */
+/* Biomas de sectores */
+.vacio { background: #090d16; }
+.nebulosa { background: linear-gradient(135deg, #3b0764, #1e1b4b); border-color: #581c87; }
+.asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
+
+/* Niebla de guerra */
 .no-explorado {
-    background: #060a13 !important;
+    background: #05050a !important;
     border-style: dashed;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 .no-explorado * { display: none; }
 .no-explorado::after { content: '🔒'; font-size: 12px; }
 
-.explorado {
-    background: #111c33;
-    border-color: #334155;
-}
-
-.danger-clue {
-    color: var(--amber-neon);
-    font-size: 16px;
-}
-
 /* Sonda del Jugador */
 .probe-here {
     border: 2px solid var(--cyan-neon) !important;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
     background: rgba(0, 240, 255, 0.15) !important;
 }
 
 .probe-icon {
-    font-size: 20px;
+    font-size: 22px;
 }
 
 /* Panel de Control Lateral */
