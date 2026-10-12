@@ -1,75 +1,114 @@
-// 1. Definición de la matriz de 5x5 para el mapa estelar
+// Dimensiones de la Matriz del Buscaminas Espacial
 const FILAS = 5;
 const COLS = 5;
 
-// Matriz principal de biomas/tipos de sectores
-const mapaSectores = [
-    ["vacio", "nebulosa", "vacio", "asteroides", "vacio"],
-    ["vacio", "vacio", "asteroides", "nebulosa", "pulser"],
-    ["nebulosa", "pulser", "vacio", "vacio", "asteroides"],
-    ["asteroides", "vacio", "nebulosa", "nebulosa", "vacio"],
-    ["vacio", "vacio", "vacio", "pulser", "vacio"]
-];
-
-// Matriz secundaria de contenidos ocultos (Señales / Exoplanetas / Anomalías)
-const mapaAnomalias = [
-    ["", "", "", "🪐 Exoplaneta", ""],
-    ["", "", "", "", ""],
-    ["", "✨ Pulsar Activo", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", "🚀 Nave Perdida"]
-];
-
-// Matriz de visibilidad (Niebla estelar)
-let mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
-
-// Posición inicial de la Sonda en la matriz [fila][columna]
+// Estado del juego
+let matrizTablero = []; // Almacena lo que hay en cada [fila][columna]
+let matrizRevelada = []; // Controla la niebla de guerra [true/false]
 let sondaFila = 0;
 let sondaCol = 0;
+let exoplanetasRestantes = 3;
+let juegoTerminado = false;
 
-const iconosSector = {
-    vacio: '🌌',
-    nebulosa: '🟣',
-    pulser: '🟢',
-    asteroides: '🪨'
-};
+// Inicializar y barajar elementos en la matriz al azar
+function iniciarJuego() {
+    sondaFila = 0;
+    sondaCol = 0;
+    exoplanetasRestantes = 3;
+    juegoTerminado = false;
+    document.getElementById('game-modal').classList.add('hidden');
 
-function logTelemetria(mensaje) {
-    const box = document.getElementById('telemetry-log');
-    box.innerHTML = `> ${mensaje}<br>` + box.innerHTML;
+    // 1. Crear matriz vacía 5x5
+    matrizTablero = Array(FILAS).fill().map(() => Array(COLS).fill("vacio"));
+    matrizRevelada = Array(FILAS).fill().map(() => Array(COLS).fill(false));
+
+    // El punto de partida [0][0] siempre está seguro y explorado
+    matrizRevelada[0][0] = true;
+
+    // 2. Colocar elementos clave asegurando que no caigan en [0][0]
+    colocarElementoAleatorio("agujero_negro", 1);
+    colocarElementoAleatorio("impostor", 2);
+    colocarElementoAleatorio("exoplaneta", 3);
+
+    logTelemetria("Nueva misión lista. Coordenadas [0][0] seguras.");
+    renderizarMapa();
 }
 
-// Renderizar la matriz en el HTML de forma sistemática
+// Función auxiliar para colocar elementos aleatoriamente en la matriz
+function colocarElementoAleatorio(tipo, cantidad) {
+    let colocados = 0;
+    while (colocados < cantidad) {
+        let f = Math.floor(Math.random() * FILAS);
+        let c = Math.floor(Math.random() * COLS);
+
+        // Evitar la casilla inicial [0][0] y celdas ya ocupadas
+        if (!(f === 0 && c === 0) && matrizTablero[f][c] === "vacio") {
+            matrizTablero[f][c] = tipo;
+            colocados++;
+        }
+    }
+}
+
+// Algoritmo de Búsqueda Vecina (Estilo Buscaminas)
+// Cuenta cuántos peligros (agujero negro o impostores) hay alrededor de [fila][columna]
+function contarPeligrosVecinos(f, c) {
+    let contador = 0;
+    
+    // Recorrer las 8 celdas vecinas usando desplazamientos relativas (-1, 0, 1)
+    for (let df = -1; df <= 1; df++) {
+        for (let dc = -1; dc <= 1; dc++) {
+            let vecF = f + df;
+            let vecC = c + dc;
+
+            // Validar límites estrictos de la matriz bidimensional
+            if (vecF >= 0 && vecF < FILAS && vecC >= 0 && vecC < COLS) {
+                if (matrizTablero[vecF][vecC] === "agujero_negro" || matrizTablero[vecF][vecC] === "impostor") {
+                    contador++;
+                }
+            }
+        }
+    }
+    return contador;
+}
+
+// Renderizar la matriz en el HTML
 function renderizarMapa() {
     const contenedor = document.getElementById('star-map');
     contenedor.innerHTML = '';
 
-    for (let fila = 0; fila < FILAS; fila++) {
-        for (let col = 0; col < COLS; col++) {
+    for (let f = 0; f < FILAS; f++) {
+        for (let c = 0; c < COLS; c++) {
             const celda = document.createElement('div');
-            const esPosicionSonda = (fila === sondaFila && col === sondaCol);
-            const estaRevelado = mapaRevelado[fila][col];
-            const tipoSector = mapaSectores[fila][col]; // Acceso matriz[fila][columna]
-            const objetoOculto = mapaAnomalias[fila][col];
+            const esJugador = (f === sondaFila && c === sondaCol);
+            const estaRevelado = matrizRevelada[f][c];
 
-            celda.id = `sector-${fila}-${col}`;
-            celda.className = `sector ${tipoSchClase(tipoSector)}`;
+            celda.id = `sector-${f}-${c}`;
+            celda.className = 'sector';
 
-            if (!estaRevelado && !esPosicionSonda) {
-                celda.classList.add('no-explorado');
-            }
+            let contenidoHTML = `<span class="coords">[${f}][${c}]</span>`;
 
-            if (esPosicionSonda) {
+            if (esJugador) {
                 celda.classList.add('probe-here');
-            }
-
-            // Construcción interna de la celda con sus coordenadas de indexación
-            let contenidoHTML = `<span class="coords">[${fila}][${col}]</span>`;
-
-            if (esPosicionSonda) {
                 contenidoHTML += `<span class="probe-icon">🛰️</span>`;
-            } else if (estaRevelado) {
-                contenidoHTML += `<span>${objetoOculto !== "" ? '⭐' : iconosSector[tipoSector]}</span>`;
+            } else if (!estaRevelado) {
+                celda.classList.add('no-explorado');
+            } else {
+                celda.classList.add('explorado');
+                let contenido = matrizTablero[f][c];
+
+                if (contenido === "exoplaneta") {
+                    contenidoHTML += `<span>🪐</span>`;
+                } else if (contenido === "agujero_negro" && juegoTerminado) {
+                    contenidoHTML += `<span>🕳️</span>`;
+                } else {
+                    // Mostrar pista numérica de peligros cercanos (Buscaminas)
+                    let peligros = contarPeligrosVecinos(f, c);
+                    if (peligros > 0) {
+                        contenidoHTML += `<span class="danger-clue">${peligros}</span>`;
+                    } else {
+                        contenidoHTML += `<span style="color: #475569;">·</span>`;
+                    }
+                }
             }
 
             celda.innerHTML = contenidoHTML;
@@ -77,82 +116,90 @@ function renderizarMapa() {
         }
     }
 
-    // Actualizar datos de panel
-    document.getElementById('coords-val').innerText = `[fila: ${sondaFila}][col: ${sondaCol}]`;
-    document.getElementById('sector-val').innerText = mapaSectores[sondaFila][sondaCol].toUpperCase();
+    // Actualizar panel lateral
+    document.getElementById('coords-val').innerText = `[${sondaFila}][${sondaCol}]`;
+    document.getElementById('score-val').innerText = `${3 - exoplanetasRestantes} / 3 Encontrados`;
 }
 
-function tipoSchClase(tipo) {
-    return tipo;
-}
-
-// Movimiento de la sonda respetando los límites de la matriz 5x5
+// Movimiento de la sonda con validación de límites de la matriz
 function moverSonda(df, dc) {
+    if (juegoTerminado) return;
+
     let nuevaFila = sondaFila + df;
     let nuevaCol = sondaCol + dc;
 
-    // Verificación de límites de la matriz bidimensional
+    // Validación de límites de la matriz [5x5]
     if (nuevaFila >= 0 && nuevaFila < FILAS && nuevaCol >= 0 && nuevaCol < COLS) {
         sondaFila = nuevaFila;
         sondaCol = nuevaCol;
-        
-        // Revelar sector actual
-        mapaRevelado[sondaFila][sondaCol] = true;
+        matrizRevelada[sondaFila][sondaCol] = true;
 
-        logTelemetria(`Salto a sector [${sondaFila}][${sondaCol}]`);
-        renderizarMapa();
+        let contenidoCelda = matrizTablero[sondaFila][sondaCol];
+        logTelemetria(`Salto a coordenada [${sondaFila}][${sondaCol}]`);
 
-        // Detectar si hay algo oculto en esta coordenada
-        if (mapaAnomalias[sondaFila][sondaCol] !== "") {
-            logTelemetria(`¡Anomalía detectada: ${mapaAnomalias[sondaFila][sondaCol]}!`);
-        }
-    } else {
-        logTelemetria(`⚠️ Alerta: Límite del sector estelar alcanzado.`);
-    }
-}
+        // Comprobar condiciones de casillas
+        if (contenidoCelda === "agujero_negro") {
+            juegoTerminado = true;
+            revelarTodoElMapa();
+            mostrarModal("💥 ¡Destrucción Total!", "Tu sonda cayó en el Agujero Negro del sector. Fin de la misión.");
+        } else if (contenidoCelda === "exoplaneta") {
+            matrizTablero[sondaFila][sondaCol] = "vacio"; // Ya fue recolectado
+            exoplanetasRestantes--;
+            logTelemetria(`<b>¡Exoplaneta recolectado en [${sondaFila}][${sondaCol}]!</b>`);
 
-// 2. Algoritmo de Búsqueda en 2D (Recorrido Sistemático con ciclos anidados)
-async function ejecutarBusqueda2D() {
-    logTelemetria(`<b>Iniciando escaneo de largo alcance (Búsqueda 2D)...</b>`);
-    let hallazgo = false;
-
-    // Recorrido sistemático fila por fila, columna por columna
-    for (let fila = 0; fila < FILAS; fila++) {
-        for (let col = 0; col < COLS; col++) {
-            const celdaDOM = document.getElementById(`sector-${fila}-${col}`);
-            celdaDOM.classList.add('scanning');
-
-            // Pausa de animación para simular el procesamiento del escáner
-            await new Promise(resolve => setTimeout(resolve, 80));
-
-            // Comprobación de condición de búsqueda en la matriz secundaria
-            if (mapaAnomalias[fila][col] !== "") {
-                mapaRevelado[fila][col] = true;
-                renderizarMapa();
-                document.getElementById(`sector-${fila}-${col}`).classList.add('signal-found');
-                logTelemetria(`<b>¡Señal localizada en [${fila}][${col}] (${mapaAnomalias[fila][col]})!</b>`);
-                hallazgo = true;
+            if (exoplanetasRestantes === 0) {
+                juegoTerminado = true;
+                revelarTodoElMapa();
+                mostrarModal("🎉 ¡Misión Exitoso!", "Has recolectado los 3 Exoplanetas y salvado la expedición.");
             }
+        } else if (contenidoCelda === "impostor") {
+            logTelemetria(`⚠️ Alerta: Señal falsa detectada en este sector.`);
+        }
 
-            celdaDOM.classList.remove('scanning');
+        renderizarMapa();
+    } else {
+        logTelemetria(`⚠️ Límite del sector estelar alcanzado.`);
+    }
+}
+
+// Algoritmo de Búsqueda 2D Global (Requisito universitario con ciclos for anidados)
+async function ejecutarEscaneoRadar2D() {
+    if (juegoTerminado) return;
+    logTelemetria(`<b>Iniciando escaneo global de la matriz [5x5]...</b>`);
+
+    for (let f = 0; f < FILAS; f++) {
+        for (let c = 0; c < COLS; c++) {
+            const celdaDOM = document.getElementById(`sector-${f}-${c}`);
+            if (celdaDOM) celdaDOM.classList.add('scanning');
+
+            await new Promise(res => setTimeout(res, 60));
+
+            if (celdaDOM) celdaDOM.classList.remove('scanning');
         }
     }
 
-    if (!hallazgo) {
-        logTelemetria(`Escaneo completado. Sin anomalías en este cuadrante.`);
+    logTelemetria(`Escaneo sistemático finalizado. Analiza los números de peligro cercanos.`);
+}
+
+function revelarTodoElMapa() {
+    for (let f = 0; f < FILAS; f++) {
+        for (let c = 0; c < COLS; c++) {
+            matrizRevelada[f][c] = true;
+        }
     }
 }
 
-function reiniciarMision() {
-    sondaFila = 0;
-    sondaCol = 0;
-    mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
-    mapaRevelado[0][0] = true;
-    logTelemetria("Misión reiniciada. Sonda en base [0][0].");
-    renderizarMapa();
+function mostrarModal(titulo, desc) {
+    document.getElementById('modal-title').innerText = titulo;
+    document.getElementById('modal-desc').innerText = desc;
+    document.getElementById('game-modal').classList.remove('hidden');
 }
 
-// Control por teclado (WASD y Flechas direccionales)
+function reiniciarJuego() {
+    iniciarJuego();
+}
+
+// Control por teclado (WASD / Flechas)
 window.addEventListener('keydown', (e) => {
     switch(e.key.toLowerCase()) {
         case 'w': case 'arrowup': moverSonda(-1, 0); break;
@@ -162,6 +209,5 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Inicializar misión
-mapaRevelado[0][0] = true;
-renderizarMapa();
+// Iniciar al cargar la página
+iniciarJuego();
