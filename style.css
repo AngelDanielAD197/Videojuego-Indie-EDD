@@ -202,3 +202,47 @@ h1 {
     from { transform: scale(1); }
     to { transform: scale(1.08); }
 }
+
+/* Controles para pantalla táctil */
+.mobile-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.d-row {
+    display: flex;
+    gap: 8px;
+}
+
+.d-btn {
+    background: #1e293b;
+    border: 1px solid #00f0ff;
+    color: white;
+    font-size: 20px;
+    width: 60px;
+    height: 50px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.d-btn:active {
+    background: #00f0ff;
+    color: #030712;
+}
+
+/* Ajuste general para que se adapte mejor a celulares */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+    .control-panel {
+        width: 100%;
+        max-width: 375px;
+    }
+}
