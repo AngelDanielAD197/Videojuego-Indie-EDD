@@ -54,7 +54,7 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Matriz 5x5 Estelar */
+/* Matriz 5x5 Estelar (AQUÍ ESTABA EL ERROR: Faltaban estas líneas de dimensiones) */
 #star-map {
     display: grid;
     grid-template-columns: repeat(5, 60px);
