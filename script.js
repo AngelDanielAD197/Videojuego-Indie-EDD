@@ -1,16 +1,18 @@
-// Dimensiones de la Matriz del Buscaminas Espacial
+// Dimensiones de la Matriz del Sector Estelar
 const FILAS = 5;
 const COLS = 5;
 
-// Estado del juego
-let matrizTablero = []; 
-let matrizRevelada = []; 
+// Matrices del juego
+let mapaSectores = [];   // Biomas estelares ([fila][columna])
+let mapaEventos = [];    // Eventos ocultos (exoplanetas, agujero negro real, impostores)
+let mapaRevelado = [];   // Niebla de guerra
 let sondaFila = 0;
 let sondaCol = 0;
-let exoplanetasRestantes = 3;
+let exoplanetasEncontrados = 0;
 let juegoTerminado = false;
 
-// Inicializar al cargar el DOM de forma segura
+const tiposBioma = ["vacio", "nebulosa", "asteroides"];
+
 document.addEventListener("DOMContentLoaded", () => {
     iniciarJuego();
 });
@@ -18,57 +20,56 @@ document.addEventListener("DOMContentLoaded", () => {
 function iniciarJuego() {
     sondaFila = 0;
     sondaCol = 0;
-    exoplanetasRestantes = 3;
+    exoplanetasEncontrados = 0;
     juegoTerminado = false;
-    
+
     const modal = document.getElementById('game-modal');
     if (modal) modal.classList.add('hidden');
 
-    // 1. Crear matriz vacía 5x5
-    matrizTablero = Array(FILAS).fill().map(() => Array(COLS).fill("vacio"));
-    matrizRevelada = Array(FILAS).fill().map(() => Array(COLS).fill(false));
+    // 1. Inicializar matrices 5x5
+    mapaSectores = Array(FILAS).fill().map(() => Array(COLS).fill("vacio"));
+    mapaEventos = Array(FILAS).fill().map(() => Array(COLS).fill(""));
+    mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
 
-    // El punto de partida [0][0] siempre está seguro y explorado
-    matrizRevelada[0][0] = true;
+    mapaRevelado[0][0] = true; // Inicio seguro
 
-    // 2. Colocar elementos clave asegurando que no caigan en [0][0]
-    colocarElementoAleatorio("agujero_negro", 1);
-    colocarElementoAleatorio("impostor", 2);
-    colocarElementoAleatorio("exoplaneta", 3);
+    // 2. Rellenar biomas estelares al azar
+    for (let f = 0; f < FILAS; f++) {
+        for (let c = 0; c < COLS; c++) {
+            let randomIndex = Math.floor(Math.random() * tiposBioma.length);
+            mapaSectores[f][c] = tiposBioma[randomIndex];
+        }
+    }
 
-    logTelemetria("Nueva misión lista. Coordenadas [0][0] seguras.");
+    // 3. Colocar 3 Exoplanetas
+    colocarEnMatriz("exoplaneta", 3);
+
+    // 4. Tu idea genial: 3 candidatos a agujero negro (1 real, 2 estrellas impostoras)
+    colocarEnMatriz("agujero_negro_real", 1);
+    colocarEnMatriz("estrella_impostora", 2);
+
+    logTelemetria("Sonda desplegada en sector [0][0]. ¡Busca los 3 Exoplanetas!");
     renderizarMapa();
 }
 
-function colocarElementoAleatorio(tipo, cantidad) {
+// Función auxiliar para posicionar elementos evitando [0][0]
+function colocarElemento(tipo, f, c) {
+    mapaEventos[f][c] = tipo;
+}
+
+function colocarEnMatriz(tipo, cantidad) {
     let colocados = 0;
     while (colocados < cantidad) {
         let f = Math.floor(Math.random() * FILAS);
         let c = Math.floor(Math.random() * COLS);
-
-        if (!(f === 0 && c === 0) && matrizTablero[f][c] === "vacio") {
-            matrizTablero[f][c] = tipo;
+        if (!(f === 0 && c === 0) && mapaEventos[f][c] === "") {
+            mapaEventos[f][c] = tipo;
             colocados++;
         }
     }
 }
 
-function contarPeligrosVecinos(f, c) {
-    let contador = 0;
-    for (let df = -1; df <= 1; df++) {
-        for (let dc = -1; dc <= 1; dc++) {
-            let vecF = f + df;
-            let vecC = c + dc;
-            if (vecF >= 0 && vecF < FILAS && vecC >= 0 && vecC < COLS) {
-                if (matrizTablero[vecF][vecC] === "agujero_negro" || matrizTablero[vecF][vecC] === "impostor") {
-                    contador++;
-                }
-            }
-        }
-    }
-    return contador;
-}
-
+// Renderizado de la Matriz 5x5
 function renderizarMapa() {
     const contenedor = document.getElementById('star-map');
     if (!contenedor) return;
@@ -78,10 +79,11 @@ function renderizarMapa() {
         for (let c = 0; c < COLS; c++) {
             const celda = document.createElement('div');
             const esJugador = (f === sondaFila && c === sondaCol);
-            const estaRevelado = matrizRevelada[f][c];
+            const estaRevelado = mapaRevelado[f][c];
+            const bioma = mapaSectores[f][c];
 
             celda.id = `sector-${f}-${c}`;
-            celda.className = 'sector';
+            celda.className = `sector ${bioma}`;
 
             let contenidoHTML = `<span class="coords">[${f}][${c}]</span>`;
 
@@ -91,20 +93,15 @@ function renderizarMapa() {
             } else if (!estaRevelado) {
                 celda.classList.add('no-explorado');
             } else {
-                celda.classList.add('explorado');
-                let contenido = matrizTablero[f][c];
-
-                if (contenido === "exoplaneta") {
+                let evento = mapaEventos[f][c];
+                if (evento === "exoplaneta") {
                     contenidoHTML += `<span>🪐</span>`;
-                } else if (contenido === "agujero_negro" && juegoTerminado) {
+                } else if (evento === "agujero_negro_real" && juegoTerminado) {
                     contenidoHTML += `<span>🕳️</span>`;
+                } else if (evento === "estrella_impostora" && juegoTerminado) {
+                    contenidoHTML += `<span>✨</span>`;
                 } else {
-                    let peligros = contarPeligrosVecinos(f, c);
-                    if (peligros > 0) {
-                        contenidoHTML += `<span class="danger-clue">${peligros}</span>`;
-                    } else {
-                        contenidoHTML += `<span style="color: #475569;">·</span>`;
-                    }
+                    contenidoHTML += `<span style="color: #475569;">·</span>`;
                 }
             }
 
@@ -116,9 +113,10 @@ function renderizarMapa() {
     const coordsVal = document.getElementById('coords-val');
     const scoreVal = document.getElementById('score-val');
     if (coordsVal) coordsVal.innerText = `[${sondaFila}][${sondaCol}]`;
-    if (scoreVal) scoreVal.innerText = `${3 - exoplanetasRestantes} / 3 Encontrados`;
+    if (scoreVal) scoreVal.innerText = `${exoplanetasEncontrados} / 3 Encontrados`;
 }
 
+// Movimiento en la matriz con validación de límites
 function moverSonda(df, dc) {
     if (juegoTerminado) return;
 
@@ -128,27 +126,27 @@ function moverSonda(df, dc) {
     if (nuevaFila >= 0 && nuevaFila < FILAS && nuevaCol >= 0 && nuevaCol < COLS) {
         sondaFila = nuevaFila;
         sondaCol = nuevaCol;
-        matrizRevelada[sondaFila][sondaCol] = true;
+        mapaRevelado[sondaFila][sondaCol] = true;
 
-        let contenidoCelda = matrizTablero[sondaFila][sondaCol];
-        logTelemetria(`Salto a coordenada [${sondaFila}][${sondaCol}]`);
+        let eventoActual = mapaEventos[sondaFila][sondaCol];
+        logTelemetria(`Salto a sector [${sondaFila}][${sondaCol}]`);
 
-        if (contenidoCelda === "agujero_negro") {
+        if (eventoActual === "agujero_negro_real") {
             juegoTerminado = true;
             revelarTodoElMapa();
-            mostrarModal("💥 ¡Destrucción Total!", "Tu sonda cayó en el Agujero Negro del sector. Fin de la misión.");
-        } else if (contenidoCelda === "exoplaneta") {
-            matrizTablero[sondaFila][sondaCol] = "vacio"; 
-            exoplanetasRestantes--;
-            logTelemetria(`<b>¡Exoplaneta recolectado en [${sondaFila}][${sondaCol}]!</b>`);
+            mostrarModal("💥 ¡Destrucción Total!", "¡Caíste en el Agujero Negro verdadero! La sonda ha colapsado.");
+        } else if (eventoActual === "estrella_impostora") {
+            logTelemetria(`⚠️ Era una Estrella Impostora. Sin peligro crítico, pero falsa señal.`);
+        } else if (eventoActual === "exoplaneta") {
+            mapaEventos[sondaFila][sondaCol] = "recolectado";
+            exoplanetasEncontrados++;
+            logTelemetria(`<b>¡Exoplaneta descubierto en [${sondaFila}][${sondaCol}]! (${exoplanetasEncontrados}/3)</b>`);
 
-            if (exoplanetasRestantes === 0) {
+            if (exoplanetasEncontrados === 3) {
                 juegoTerminado = true;
                 revelarTodoElMapa();
-                mostrarModal("🎉 ¡Misión Exitosa!", "Has recolectado los 3 Exoplanetas y salvado la expedición.");
+                mostrarModal("🎉 ¡Misión Exitosa!", "¡Has recolectado los 3 Exoplanetas y completado el mapeo del sector!");
             }
-        } else if (contenidoCelda === "impostor") {
-            logTelemetria(`⚠️ Alerta: Señal falsa detectada en este sector.`);
         }
 
         renderizarMapa();
@@ -157,9 +155,12 @@ function moverSonda(df, dc) {
     }
 }
 
+// Algoritmo de Búsqueda 2D Global (Radar con ciclos for anidados)
 async function ejecutarEscaneoRadar2D() {
     if (juegoTerminado) return;
-    logTelemetria(`<b>Iniciando escaneo global de la matriz [5x5]...</b>`);
+    logTelemetria(`<b>Iniciando escaneo de radar 2D (Ciclos anidados)...</b>`);
+
+    let candidatosDetectados = 0;
 
     for (let f = 0; f < FILAS; f++) {
         for (let c = 0; c < COLS; c++) {
@@ -168,17 +169,23 @@ async function ejecutarEscaneoRadar2D() {
 
             await new Promise(res => setTimeout(res, 50));
 
+            // Si el radar pasa por uno de los candidatos (agujero negro o impostor), da una pista
+            let evento = mapaEventos[f][c];
+            if (evento === "agujero_negro_real" || evento === "estrella_impostora") {
+                candidatosDetectados++;
+            }
+
             if (celdaDOM) celdaDOM.classList.remove('scanning');
         }
     }
 
-    logTelemetria(`Escaneo sistemático finalizado. Analiza los números de peligro cercanos.`);
+    logTelemetria(`📡 Radar detectó ${candidatosDetectados} anomalías sospechosas en el cuadrante.`);
 }
 
 function revelarTodoElMapa() {
     for (let f = 0; f < FILAS; f++) {
         for (let c = 0; c < COLS; c++) {
-            matrizRevelada[f][c] = true;
+            mapaRevelado[f][c] = true;
         }
     }
 }
