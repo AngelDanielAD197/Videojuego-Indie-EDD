@@ -4,6 +4,7 @@
     --cyan-neon: #00f0ff;
     --purple-neon: #a855f7;
     --amber-neon: #f59e0b;
+    --danger-red: #ef4444;
     --text-main: #e2e8f0;
 }
 
@@ -53,7 +54,7 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Matriz 5x5 Estelar adaptable */
+/* Matriz 5x5 Estelar */
 #star-map {
     display: grid;
     grid-template-columns: repeat(5, 60px);
@@ -75,7 +76,8 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: bold;
     box-sizing: border-box;
     border: 1px solid #1e293b;
 }
@@ -89,30 +91,34 @@ h1 {
     font-weight: bold;
 }
 
-/* Tipos de Sector (Biomas cósmicos) */
-.vacio { background: #090d16; }
-.nebulosa { background: linear-gradient(135deg, #3b0764, #1e1b4b); border-color: #581c87; }
-.pulser { background: linear-gradient(135deg, #065f46, #022c22); border-color: #047857; }
-.asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
-
+/* Estados de celdas */
 .no-explorado {
-    background: #05050a !important;
+    background: #060a13 !important;
     border-style: dashed;
-    opacity: 0.4;
+    opacity: 0.5;
 }
 .no-explorado * { display: none; }
-.no-explorado::after { content: '🔒'; font-size: 12px; color: #334155; }
+.no-explorado::after { content: '🔒'; font-size: 12px; }
+
+.explorado {
+    background: #111c33;
+    border-color: #334155;
+}
+
+.danger-clue {
+    color: var(--amber-neon);
+    font-size: 16px;
+}
 
 /* Sonda del Jugador */
 .probe-here {
     border: 2px solid var(--cyan-neon) !important;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-    background: rgba(0, 240, 255, 0.1) !important;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    background: rgba(0, 240, 255, 0.15) !important;
 }
 
 .probe-icon {
     font-size: 20px;
-    filter: drop-shadow(0 0 5px var(--cyan-neon));
 }
 
 /* Panel de Control Lateral */
@@ -173,7 +179,7 @@ h1 {
     border: 1px solid #1e293b;
 }
 
-/* Controles Táctiles en Pantalla bien centrados */
+/* Controles Táctiles en Pantalla */
 .mobile-controls {
     display: flex;
     flex-direction: column;
@@ -207,13 +213,34 @@ h1 {
     color: #030712;
 }
 
-/* Animaciones */
+/* Modal Emergente */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(3, 7, 18, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.hidden { display: none; }
+
+.modal-content {
+    background: #0b1329;
+    border: 2px solid var(--cyan-neon);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+}
+
+.modal-content h2 { margin-top: 0; color: var(--cyan-neon); }
+
+/* Animaciones del Radar */
 .scanning {
     border: 2px solid var(--amber-neon) !important;
     background: rgba(245, 158, 11, 0.2) !important;
-}
-
-.signal-found {
-    border: 2px solid var(--purple-neon) !important;
-    box-shadow: 0 0 15px var(--purple-neon) !important;
 }
