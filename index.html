@@ -1,272 +1,417 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HydroSim — Caudal de Ríos</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonda Astrofísica - Exploración 2D</title>
+    <style>
+        :root {
+            --space-bg: #030712;
+            --panel-bg: #0b1329;
+            --cyan-neon: #00f0ff;
+            --purple-neon: #a855f7;
+            --amber-neon: #f59e0b;
+            --text-main: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--space-bg);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            color: var(--cyan-neon);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            font-size: 24px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #1e3a8a;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 240, 255, 0.05);
+        }
+
+        /* Matriz 5x5 Estelar */
+        #star-map {
+            display: grid;
+            grid-template-columns: repeat(5, 75px);
+            grid-template-rows: repeat(5, 75px);
+            gap: 6px;
+            background: #020617;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #1e293b;
+        }
+
+        .sector {
+            width: 75px;
+            height: 75px;
+            background: #0f172a;
+            border-radius: 6px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            border: 1px solid #1e293b;
+        }
+
+        .sector .coords {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            font-size: 8px;
+            color: #475569;
+            font-weight: bold;
+        }
+
+        /* Tipos de Sector (Biomas cósmicos) */
+        .vacio { background: #090d16; }
+        .nebulosa { background: linear-gradient(135deg, #3b0764, #1e1b4b); border-color: #581c87; }
+        .pulser { background: linear-gradient(135deg, #065f46, #022c22); border-color: #047857; }
+        .asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
+
+        .explorado {
+            border-color: #334155;
+        }
+
+        .no-explorado {
+            background: #05050a !important;
+            border-style: dashed;
+            opacity: 0.4;
+        }
+        .no-explorado * { display: none; }
+        .no-explorado::after { content: '🔒'; font-size: 14px; color: #334155; }
+
+        /* Sonda del Jugador */
+        .probe-here {
+            border: 2px solid var(--cyan-neon) !important;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            background: rgba(0, 240, 255, 0.1) !important;
+        }
+
+        .probe-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 5px var(--cyan-neon));
+            animation: float 2s infinite ease-in-out;
+        }
+
+        /* Panel de Control Lateral */
+        .control-panel {
+            width: 230px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-box {
+            background: #020617;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .metric-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--cyan-neon);
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 5px;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-scan {
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+        }
+
+        .btn-scan:hover {
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        #telemetry-log {
+            font-size: 10px;
+            color: #94a3b8;
+            height: 70px;
+            overflow-y: auto;
+            background: #020617;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #1e293b;
+        }
+
+        /* Efectos visuales para el algoritmo de búsqueda en 2D */
+        .scanning {
+            border: 2px solid var(--amber-neon) !important;
+            background: rgba(245, 158, 11, 0.2) !important;
+        }
+
+        .signal-found {
+            border: 2px solid var(--purple-neon) !important;
+            box-shadow: 0 0 20px var(--purple-neon) !important;
+            animation: pulse-signal 1s infinite alternate;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes pulse-signal {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+    </style>
 </head>
 <body>
-<!-- ───────────── HEADER ───────────── -->
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 28 Q10 14 20 20 Q30 26 36 12" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" fill="none"/>
-          <path d="M4 34 Q10 22 20 26 Q30 30 36 20" stroke="#818CF8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
-          <circle cx="20" cy="20" r="3" fill="#38BDF8"/>
-        </svg>
-      </div>
-      <div>
-        <div class="logo-name">HydroSim</div>
-        <div class="logo-sub">Simpson 1/3 · Caudal Hidráulico</div>
-      </div>
-    </div>
-    <div class="header-badges">
-      <span class="badge badge-blue">Métodos Numéricos II</span>
-      <span class="badge badge-purple">FES Acatlán</span>
-    </div>
-  </div>
-</header>
 
-<!-- ───────────── HERO ───────────── -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-content">
-    <div class="hero-tag">Simulador Hidráulico Profesional</div>
-    <h1 class="hero-title">Estimación de<br><span class="gradient-text">Caudal de Ríos</span></h1>
-    <p class="hero-desc">Integración numérica por el Método de Simpson 1/3 aplicada al aforo de ríos. Ingresa tus datos hidráulicos y obtén el caudal, área transversal y velocidad promedio con visualización completa.</p>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-val">1/3</span><span class="stat-label">Simpson</span></div>
-      <div class="stat-divider"></div>
-      <div class="stat"><span class="stat-val">O(h⁴)</span><span class="stat-label">Precisión</span></div>
-      <div class="stat-divider"></div>
-      <div class="stat"><span class="stat-val">m³/s</span><span class="stat-label">Resultado</span></div>
-    </div>
-  </div>
-  <div class="river-visual">
-    <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" class="river-svg">
-      <defs>
-        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.6"/>
-          <stop offset="100%" stop-color="#0C4A6E" stop-opacity="0.9"/>
-        </linearGradient>
-        <linearGradient id="bedGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#78350F"/>
-          <stop offset="100%" stop-color="#451A03"/>
-        </linearGradient>
-      </defs>
-      <!-- River bed -->
-      <path d="M0 80 Q60 120 120 110 Q180 100 250 130 Q320 155 380 120 Q440 90 500 100 L500 160 L0 160 Z" fill="url(#bedGrad)"/>
-      <!-- Water surface -->
-      <path d="M0 40 Q80 30 160 45 Q240 60 320 38 Q400 20 500 35 L500 100 Q440 90 380 120 Q320 155 250 130 Q180 100 120 110 Q60 120 0 80 Z" fill="url(#waterGrad)" opacity="0.85"/>
-      <!-- Wave lines -->
-      <path d="M20 55 Q80 45 140 55 Q200 65 260 50" stroke="#7DD3FC" stroke-width="1.5" fill="none" opacity="0.5" class="wave"/>
-      <path d="M240 42 Q320 30 400 44 Q450 50 490 40" stroke="#7DD3FC" stroke-width="1.5" fill="none" opacity="0.4" class="wave2"/>
-      <!-- Measurement lines -->
-      <line x1="80" y1="40" x2="80" y2="112" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
-      <line x1="200" y1="35" x2="200" y2="128" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
-      <line x1="320" y1="38" x2="320" y2="145" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
-      <line x1="420" y1="32" x2="420" y2="118" stroke="#F472B6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>
-      <!-- Labels -->
-      <text x="80" y="28" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₁</text>
-      <text x="200" y="22" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₂</text>
-      <text x="320" y="25" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₃</text>
-      <text x="420" y="18" fill="#F472B6" font-size="10" text-anchor="middle" font-family="monospace">v₄</text>
-    </svg>
-  </div>
-</section>
+    <h1>Sonda Astrofísica 2D</h1>
+    <div class="subtitle">Navegación por Matriz [5x5] • Usa <b>WASD</b> o <b>FLECHAS</b></div>
 
-<!-- ───────────── MAIN LAYOUT ───────────── -->
-<main class="main-layout">
+    <div class="dashboard">
+        <!-- Mapa de Sectores (Matriz) -->
+        <div id="star-map"></div>
 
-  <!-- ── LEFT: INPUT PANEL ── -->
-  <aside class="panel panel-input">
-    <div class="panel-header">
-      <div class="panel-icon">⚙</div>
-      <div>
-        <div class="panel-title">Datos Hidráulicos</div>
-        <div class="panel-subtitle">Ingresa las mediciones del río</div>
-      </div>
-    </div>
+        <!-- Panel de Instrumentos -->
+        <div class="control-panel">
+            <div>
+                <div class="metric-box">
+                    <h3>Coordenadas Matriz</h3>
+                    <div class="metric-value" id="coords-val">[fila: 0][col: 0]</div>
+                </div>
 
-    <!-- Ejemplo rápido -->
-    <button class="btn-example" onclick="cargarEjemplo()">
-      <span>⚡</span> Cargar datos de ejemplo
-    </button>
+                <div class="metric-box">
+                    <h3>Sector Actual</h3>
+                    <div class="metric-value" id="sector-val">Vacío Cósmico</div>
+                </div>
 
-    <!-- Número de secciones -->
-    <div class="field-group">
-      <label class="field-label">Número de puntos de medición</label>
-      <div class="field-hint">Simpson 1/3 requiere número <strong>impar</strong> de puntos (mínimo 3).</div>
-      <div class="n-selector">
-        <button class="n-btn" onclick="cambiarN(-2)">−</button>
-        <span class="n-display" id="n-display">7</span>
-        <button class="n-btn" onclick="cambiarN(2)">+</button>
-      </div>
-    </div>
+                <div class="metric-box">
+                    <h3>Registro de Telemetría</h3>
+                    <div id="telemetry-log">> Sistema en línea. Inicie exploración.</div>
+                </div>
+            </div>
 
-    <!-- Tabla de datos -->
-    <div class="field-group">
-      <label class="field-label">Tabla de Mediciones</label>
-      <div class="table-wrapper">
-        <table class="input-table" id="input-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Posición (m)</th>
-              <th>Profundidad (m)</th>
-              <th>Velocidad (m/s)</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Botón calcular -->
-    <button class="btn-calc" id="btn-calc" onclick="calcular()">
-      <span class="btn-calc-icon">∫</span>
-      <span>Calcular Caudal</span>
-    </button>
-
-    <!-- Error box -->
-    <div class="error-box hidden" id="error-box">
-      <div class="error-icon">⚠</div>
-      <div id="error-msg"></div>
-    </div>
-  </aside>
-
-  <!-- ── RIGHT: RESULTS PANEL ── -->
-  <section class="panel panel-results" id="results-panel">
-    
-    <!-- Placeholder -->
-    <div class="placeholder" id="placeholder">
-      <div class="placeholder-icon">
-        <svg viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="36" stroke="#1E3A5F" stroke-width="2"/>
-          <path d="M20 50 Q30 30 40 38 Q50 46 60 28" stroke="#0EA5E9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M20 56 Q30 40 40 44 Q50 48 60 36" stroke="#818CF8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
-        </svg>
-      </div>
-      <div class="placeholder-title">Listo para calcular</div>
-      <div class="placeholder-desc">Ingresa los datos hidráulicos del río en el panel izquierdo y presiona "Calcular Caudal" para ver los resultados, gráficas y análisis completo.</div>
-    </div>
-
-    <!-- Contenido de resultados (oculto hasta calcular) -->
-    <div id="results-content" class="hidden">
-
-      <!-- KPI Cards -->
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-main">
-          <div class="kpi-label">Caudal Total Q</div>
-          <div class="kpi-value" id="kpi-caudal">—</div>
-          <div class="kpi-unit">m³/s</div>
-          <div class="kpi-badge" id="kpi-categoria">—</div>
+            <button class="btn btn-scan" onclick="ejecutarBusqueda2D()">📡 Escanear Anomalía (Algoritmo 2D)</button>
+            <button class="btn" onclick="reiniciarMision()">🔄 Reiniciar Mapa</button>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Área Transversal</div>
-          <div class="kpi-value kpi-blue" id="kpi-area">—</div>
-          <div class="kpi-unit">m²</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Velocidad Promedio</div>
-          <div class="kpi-value kpi-purple" id="kpi-vel">—</div>
-          <div class="kpi-unit">m/s</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Prof. Máxima</div>
-          <div class="kpi-value kpi-pink" id="kpi-prof">—</div>
-          <div class="kpi-unit">m</div>
-        </div>
-      </div>
-
-      <!-- Interpretación -->
-      <div class="interpretation-box" id="interpretation-box">
-        <div class="interp-icon">🌊</div>
-        <div>
-          <div class="interp-title" id="interp-titulo">—</div>
-          <div class="interp-desc" id="interp-desc">—</div>
-        </div>
-      </div>
-
-      <!-- Paso a Paso Simpson -->
-      <div class="section-title">
-        <span class="section-num">01</span>
-        Desarrollo de Simpson 1/3
-      </div>
-      <div class="formula-box">
-        <div class="formula-title">Fórmula general</div>
-        <div class="formula">∫ f(x)dx ≈ (h/3) · [f(x₀) + 4·f(x₁) + 2·f(x₂) + 4·f(x₃) + ... + f(xₙ)]</div>
-      </div>
-      <div class="steps-table-wrapper" id="steps-table"></div>
-
-      <!-- Fórmulas del cálculo -->
-      <div class="calc-steps" id="calc-steps-box"></div>
-
-      <!-- Gráficas -->
-      <div class="section-title">
-        <span class="section-num">02</span>
-        Visualizaciones Gráficas
-      </div>
-
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Perfil Transversal del Río</div>
-          <div class="chart-wrap"><canvas id="chart-perfil"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Distribución de Velocidades</div>
-          <div class="chart-wrap"><canvas id="chart-vel"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Área Integrada (Profundidades)</div>
-          <div class="chart-wrap"><canvas id="chart-area"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Caudal por Segmento (V×D)</div>
-          <div class="chart-wrap"><canvas id="chart-caudal"></canvas></div>
-        </div>
-      </div>
-
-      <!-- Tabla de resultados -->
-      <div class="section-title">
-        <span class="section-num">03</span>
-        Tabla de Resultados Detallada
-      </div>
-      <div class="res-table-wrapper" id="res-table"></div>
-
-      <!-- Exportar -->
-      <div class="section-title">
-        <span class="section-num">04</span>
-        Exportar Resultados
-      </div>
-      <div class="export-row">
-        <button class="btn-export btn-pdf" onclick="exportarPDF()">
-          <span>📄</span> Exportar PDF
-        </button>
-        <button class="btn-export btn-excel" onclick="exportarExcel()">
-          <span>📊</span> Exportar Excel
-        </button>
-      </div>
-
     </div>
-  </section>
-</main>
 
-<!-- ───────────── FOOTER ───────────── -->
-<footer class="footer">
-  <div class="footer-inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>HydroSim · Simuladora de Caudal · Método de Simpson 1/3</div>
-    <div style="text-align: right;">
-      FES Acatlán — UNAM · Métodos Numéricos II<br>
-      <span style="color: #38BDF8; font-weight: 600; font-size: 0.9em;">Alumnas: Guerrero Montes Nora y Carrillo Acevedo Michelle</span>
-    </div>
-  </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // 1. Definición de la matriz de 5x5 para el mapa estelar
+        const FILAS = 5;
+        const COLS = 5;
+
+        // Matriz principal de biomas/tipos de sectores
+        const mapaSectores = [
+            ["vacio", "nebulosa", "vacio", "asteroides", "vacio"],
+            ["vacio", "vacio", "asteroides", "nebulosa", "pulser"],
+            ["nebulosa", "pulser", "vacio", "vacio", "asteroides"],
+            ["asteroides", "vacio", "nebulosa", "nebulosa", "vacio"],
+            ["vacio", "vacio", "vacio", "pulser", "vacio"]
+        ];
+
+        // Matriz secundaria de contenidos ocultos (Señales / Exoplanetas / Anomalías)
+        const mapaAnomalias = [
+            ["", "", "", "🪐 Exoplaneta", ""],
+            ["", "", "", "", ""],
+            ["", "✨ Pulsar Activo", "", "", ""],
+            ["", "", "", "", ""],
+            ["", "", "", "", "🚀 Nave Perdida"]
+        ];
+
+        // Matriz de visibilidad (Niebla estelar)
+        let mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
+
+        // Posición inicial de la Sonda en la matriz [fila][columna]
+        let sondaFila = 0;
+        let sondaCol = 0;
+
+        const iconosSector = {
+            vacio: '🌌',
+            nebulosa: '🟣',
+            pulser: '🟢',
+            asteroides: '🪨'
+        };
+
+        function logTelemetria(mensaje) {
+            const box = document.getElementById('telemetry-log');
+            box.innerHTML = `> ${mensaje}<br>` + box.innerHTML;
+        }
+
+        // Renderizar la matriz en el HTML de forma sistemática
+        function renderizarMapa() {
+            const contenedor = document.getElementById('star-map');
+            contenedor.innerHTML = '';
+
+            for (let fila = 0; fila < FILAS; fila++) {
+                for (let col = 0; col < COLS; col++) {
+                    const celda = document.createElement('div');
+                    const esPosicionSonda = (fila === sondaFila && col === sondaCol);
+                    const estaRevelado = mapaRevelado[fila][col];
+                    const tipoSector = mapaSectores[fila][col]; // Acceso matriz[fila][columna]
+                    const objetoOculto = mapaAnomalias[fila][col];
+
+                    celda.id = `sector-${fila}-${col}`;
+                    celda.className = `sector ${tipoSchClase(tipoSector)}`;
+
+                    if (!estaRevelado && !esPosicionSonda) {
+                        celda.classList.add('no-explorado');
+                    }
+
+                    if (esPosicionSonda) {
+                        celda.classList.add('probe-here');
+                    }
+
+                    // Construcción interna de la celda con sus coordenadas de indexación
+                    let contenidoHTML = `<span class="coords">[${fila}][${col}]</span>`;
+
+                    if (esPosicionSonda) {
+                        contenidoHTML += `<span class="probe-icon">🛰️</span>`;
+                    } else if (estaRevelado) {
+                        contenidoHTML += `<span>${objetoOculto !== "" ? '⭐' : iconosSector[tipoSector]}</span>`;
+                    }
+
+                    celda.innerHTML = contenidoHTML;
+                    contenedor.appendChild(celda);
+                }
+            }
+
+            // Actualizar datos de panel
+            document.getElementById('coords-val').innerText = `[fila: ${sondaFila}][col: ${sondaCol}]`;
+            document.getElementById('sector-val').innerText = mapaSectores[sondaFila][sondaCol].toUpperCase();
+        }
+
+        function tipoSchClase(tipo) {
+            return tipo;
+        }
+
+        // Movimiento de la sonda respetando los límites de la matriz 5x5
+        function moverSonda(df, dc) {
+            let nuevaFila = sondaFila + df;
+            let nuevaCol = sondaCol + dc;
+
+            // Verificación de límites de la matriz bidimensional
+            if (nuevaFila >= 0 && nuevaFila < FILAS && nuevaCol >= 0 && nuevaCol < COLS) {
+                sondaFila = nuevaFila;
+                sondaCol = nuevaCol;
+                
+                // Revelar sector actual
+                mapaRevelado[sondaFila][sondaCol] = true;
+
+                logTelemetria(`Salto a sector [${sondaFila}][${sondaCol}]`);
+                renderizarMapa();
+
+                // Detectar si hay algo oculto en esta coordenada
+                if (mapaAnomalias[sondaFila][sondaCol] !== "") {
+                    logTelemetria(`¡Anomalía detectada: ${mapaAnomalias[sondaFila][sondaCol]}!`);
+                }
+            } else {
+                logTelemetria(`⚠️ Alerta: Límite del sector estelar alcanzado.`);
+            }
+        }
+
+        // 2. Algoritmo de Búsqueda en 2D (Recorrido Sistemático con ciclos anidados)
+        async function ejecutarBusqueda2D() {
+            logTelemetria(`<b>Iniciando escaneo de largo alcance (Búsqueda 2D)...</b>`);
+            let hallazgo = false;
+
+            // Recorrido sistemático fila por fila, columna por columna
+            for (let fila = 0; fila < FILAS; fila++) {
+                for (let col = 0; col < COLS; col++) {
+                    const celdaDOM = document.getElementById(`sector-${fila}-${col}`);
+                    celdaDOM.classList.add('scanning');
+
+                    // Pausa de animación para simular el procesamiento del escáner
+                    await new Promise(resolve => setTimeout(resolve, 80));
+
+                    // Comprobación de condición de búsqueda en la matriz secundaria
+                    if (mapaAnomalias[fila][col] !== "") {
+                        mapaRevelado[fila][col] = true;
+                        renderizarMapa();
+                        document.getElementById(`sector-${fila}-${col}`).classList.add('signal-found');
+                        logTelemetria(`<b>¡Señal localizada en [${fila}][${col}] (${mapaAnomalias[fila][col]})!</b>`);
+                        hallazgo = true;
+                    }
+
+                    celdaDOM.classList.remove('scanning');
+                }
+            }
+
+            if (!hallazgo) {
+                logTelemetria(`Escaneo completado. Sin anomalías en este cuadrante.`);
+            }
+        }
+
+        function reiniciarMision() {
+            sondaFila = 0;
+            sondaCol = 0;
+            mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
+            mapaRevelado[0][0] = true;
+            logTelemetria("Misión reiniciada. Sonda en base [0][0].");
+            renderizarMapa();
+        }
+
+        // Control por teclado (WASD y Flechas direccionales)
+        window.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'w': case 'arrowup': moverSonda(-1, 0); break;
+                case 's': case 'arrowdown': moverSonda(1, 0); break;
+                case 'a': case 'arrowleft': moverSonda(0, -1); break;
+                case 'd': case 'arrowright': moverSonda(0, 1); break;
+            }
+        });
+
+        // Inicializar misión
+        mapaRevelado[0][0] = true;
+        renderizarMapa();
+    </script>
+</body>
+</html>
