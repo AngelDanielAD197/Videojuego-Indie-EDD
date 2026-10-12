@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscaminas Espacial - Sonda 2D</title>
-    <link rel="stylesheet" href="style.css?v=4">
-
+    <title>Sonda Astrofísica - Exploración 2D</title>
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
-    <h1>Buscaminas Espacial 2D</h1>
-    <div class="subtitle">Encuentra los 3 Exoplanetas 🪐 • Evita el Agujero Negro 🕳️</div>
+    <h1>Sonda Astrofísica 2D</h1>
+    <div class="subtitle">Explora la Matriz [5x5] • Encuentra los 3 Exoplanetas 🪐 y evita el Agujero Negro 🕳️</div>
 
     <div class="dashboard">
         <!-- Mapa de Sectores (Matriz 5x5) -->
@@ -30,13 +29,13 @@
                 </div>
 
                 <div class="metric-box">
-                    <h3>Radar Táctico (Telemetría)</h3>
-                    <div id="telemetry-log">> Misión iniciada. Explora con cuidado.</div>
+                    <h3>Registro de Telemetría</h3>
+                    <div id="telemetry-log">> Sistema en línea. Inicie exploración.</div>
                 </div>
             </div>
 
-            <button class="btn btn-scan" onclick="ejecutarEscaneoRadar2D()">📡 Escáner Global (Matriz 2D)</button>
-            <button class="btn" onclick="reiniciarJuego()">🔄 Nueva Misión</button>
+            <button class="btn btn-scan" onclick="ejecutarEscaneoRadar2D()">📡 Escáner Radar (Matriz 2D)</button>
+            <button class="btn" onclick="reiniciarJuego()">🔄 Reiniciar Misión</button>
         </div>
     </div>
 
@@ -50,15 +49,15 @@
         </div>
     </div>
 
-    <!-- Modal de Fin de Juego (Victoria / Derrota) -->
+    <!-- Modal de Fin de Juego -->
     <div id="game-modal" class="modal hidden">
         <div class="modal-content">
             <h2 id="modal-title">¡Misión Terminada!</h2>
-            <p id="modal-desc">Descripción del resultado...</p>
-            <button class="btn" onclick="reiniciarJuego()">Volver a Jugar</button>
+            <p id="modal-desc">Descripción...</p>
+            <button class="btn" onclick="reiniciarJuego()">Nueva Partida</button>
         </div>
     </div>
 
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>
