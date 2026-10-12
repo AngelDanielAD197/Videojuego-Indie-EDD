@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sonda Astrofísica - Exploración 2D</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
     <h1>Sonda Astrofísica 2D</h1>
-    <div class="subtitle">Explora la Matriz [5x5] • Encuentra los 3 Exoplanetas 🪐 y evita el Agujero Negro 🕳️</div>
+    <div class="subtitle">Matriz [5x5] • Rescata 🪐 Exoplanetas y evita el 🕳️ Agujero Negro</div>
 
     <div class="dashboard">
         <!-- Mapa de Sectores (Matriz 5x5) -->
@@ -17,21 +17,25 @@
 
         <!-- Panel de Instrumentos -->
         <div class="control-panel">
-            <div>
-                <div class="metric-box">
-                    <h3>Exoplanetas</h3>
-                    <div class="metric-value" id="score-val">0 / 3 Encontrados</div>
-                </div>
+            <div class="metric-box">
+                <h3>Exoplanetas</h3>
+                <div class="metric-value" id="score-val">0 / 3 Encontrados</div>
+            </div>
 
-                <div class="metric-box">
-                    <h3>Coordenadas [Fila][Col]</h3>
-                    <div class="metric-value" id="coords-val">[0][0]</div>
-                </div>
+            <div class="metric-box">
+                <h3>Coordenadas Actuales</h3>
+                <div class="metric-value" id="coords-val">[0][0]</div>
+            </div>
 
-                <div class="metric-box">
-                    <h3>Registro de Telemetría</h3>
-                    <div id="telemetry-log">> Sistema en línea. Inicie exploración.</div>
-                </div>
+            <!-- Pestaña de Análisis Científico del Sector -->
+            <div class="metric-box science-box">
+                <h3>Análisis Científico</h3>
+                <div id="science-desc" class="science-text">Estación base inicial. Todo en orden.</div>
+            </div>
+
+            <div class="metric-box">
+                <h3>Telemetría</h3>
+                <div id="telemetry-log">> Sistema en línea. Inicie exploración.</div>
             </div>
 
             <button class="btn btn-scan" onclick="ejecutarEscaneoRadar2D()">📡 Escáner Radar (Matriz 2D)</button>
@@ -58,6 +62,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=7"></script>
 </body>
 </html>
