@@ -90,13 +90,12 @@ h1 {
     font-weight: bold;
 }
 
-/* Estilos visuales para los diversos biomas del espacio */
+/* Biomas */
 .vacio { background: #070b14; }
 .nebulosa { background: linear-gradient(135deg, #3b076422, #1e1b4b44); border-color: #581c8755; }
 .asteroides { background: linear-gradient(135deg, #33415533, #1e293b33); border-color: #47556955; }
 .estrellas { background: radial-gradient(circle, #1e1b4b 0%, #070b14 100%); border-color: #312e81; }
 
-/* Niebla de guerra */
 .no-explorado {
     background: #05050a !important;
     border-style: dashed;
@@ -105,14 +104,12 @@ h1 {
 .no-explorado * { display: none; }
 .no-explorado::after { content: '🔒'; font-size: 12px; }
 
-/* Sonda del Jugador */
 .probe-here {
     border: 2px solid var(--cyan-neon) !important;
     box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
     background: rgba(0, 240, 255, 0.15) !important;
 }
 
-/* Panel de Control Lateral */
 .control-panel {
     width: 100%;
     display: flex;
@@ -140,15 +137,41 @@ h1 {
     color: var(--cyan-neon);
 }
 
+/* Panel científico estilizado con colores y transiciones */
 .science-box {
     border-color: #3b82f6;
-    background: rgba(30, 58, 138, 0.2);
+    background: rgba(15, 23, 42, 0.9);
+    transition: all 0.3s ease;
 }
 
 .science-text {
     font-size: 11px;
     color: #93c5fd;
     line-height: 1.3;
+}
+
+/* Estilo especial cuando se descubre un exoplaneta */
+.science-planet {
+    border-color: var(--purple-neon) !important;
+    background: rgba(168, 85, 247, 0.15) !important;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+}
+
+.science-planet .science-text {
+    color: #e879f9;
+    font-weight: bold;
+}
+
+/* Estilo de alerta para el agujero negro */
+.science-danger {
+    border-color: var(--danger-red) !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.science-danger .science-text {
+    color: #fca5a5;
+    font-weight: bold;
 }
 
 .btn {
@@ -180,7 +203,6 @@ h1 {
     border: 1px solid #1e293b;
 }
 
-/* Controles Táctiles en Pantalla */
 .mobile-controls {
     display: flex;
     flex-direction: column;
@@ -214,7 +236,6 @@ h1 {
     color: #030712;
 }
 
-/* Modal Emergente */
 .modal {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
