@@ -3,40 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sonda Astrofísica - Exploración 2D</title>
-<link rel="stylesheet" href="style.css?v=2">
-
+    <title>Buscaminas Espacial - Sonda 2D</title>
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
-    <h1>Sonda Astrofísica 2D</h1>
-    <div class="subtitle">Navegación por Matriz [5x5] • Usa controles táctiles o teclado</div>
+    <h1>Buscaminas Espacial 2D</h1>
+    <div class="subtitle">Encuentra los 3 Exoplanetas 🪐 • Evita el Agujero Negro 🕳️</div>
 
     <div class="dashboard">
-        <!-- Mapa de Sectores (Matriz) -->
+        <!-- Mapa de Sectores (Matriz 5x5) -->
         <div id="star-map"></div>
 
         <!-- Panel de Instrumentos -->
         <div class="control-panel">
             <div>
                 <div class="metric-box">
-                    <h3>Coordenadas Matriz</h3>
-                    <div class="metric-value" id="coords-val">[fila: 0][col: 0]</div>
+                    <h3>Exoplanetas</h3>
+                    <div class="metric-value" id="score-val">0 / 3 Encontrados</div>
                 </div>
 
                 <div class="metric-box">
-                    <h3>Sector Actual</h3>
-                    <div class="metric-value" id="sector-val">Vacío Cósmico</div>
+                    <h3>Coordenadas [Fila][Col]</h3>
+                    <div class="metric-value" id="coords-val">[0][0]</div>
                 </div>
 
                 <div class="metric-box">
-                    <h3>Registro de Telemetría</h3>
-                    <div id="telemetry-log">> Sistema en línea. Inicie exploración.</div>
+                    <h3>Radar Táctico (Telemetría)</h3>
+                    <div id="telemetry-log">> Misión iniciada. Explora con cuidado.</div>
                 </div>
             </div>
 
-            <button class="btn btn-scan" onclick="ejecutarBusqueda2D()">📡 Escanear Anomalía (Algoritmo 2D)</button>
-            <button class="btn" onclick="reiniciarMision()">🔄 Reiniciar Mapa</button>
+            <button class="btn btn-scan" onclick="ejecutarEscaneoRadar2D()">📡 Escáner Global (Matriz 2D)</button>
+            <button class="btn" onclick="reiniciarJuego()">🔄 Nueva Misión</button>
         </div>
     </div>
 
@@ -50,6 +49,15 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Modal de Fin de Juego (Victoria / Derrota) -->
+    <div id="game-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">¡Misión Terminada!</h2>
+            <p id="modal-desc">Descripción del resultado...</p>
+            <button class="btn" onclick="reiniciarJuego()">Volver a Jugar</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=3"></script>
 </body>
 </html>
