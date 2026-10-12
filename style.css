@@ -1,0 +1,204 @@
+:root {
+    --space-bg: #030712;
+    --panel-bg: #0b1329;
+    --cyan-neon: #00f0ff;
+    --purple-neon: #a855f7;
+    --amber-neon: #f59e0b;
+    --text-main: #e2e8f0;
+}
+
+body {
+    background-color: var(--space-bg);
+    color: var(--text-main);
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+h1 {
+    margin: 0 0 5px 0;
+    color: var(--cyan-neon);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: #64748b;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.dashboard {
+    display: flex;
+    gap: 20px;
+    background: var(--panel-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #1e3a8a;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 240, 255, 0.05);
+}
+
+/* Matriz 5x5 Estelar */
+#star-map {
+    display: grid;
+    grid-template-columns: repeat(5, 75px);
+    grid-template-rows: repeat(5, 75px);
+    gap: 6px;
+    background: #020617;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+}
+
+.sector {
+    width: 75px;
+    height: 75px;
+    background: #0f172a;
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    border: 1px solid #1e293b;
+}
+
+.sector .coords {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    font-size: 8px;
+    color: #475569;
+    font-weight: bold;
+}
+
+/* Tipos de Sector (Biomas cósmicos) */
+.vacio { background: #090d16; }
+.nebulosa { background: linear-gradient(135deg, #3b0764, #1e1b4b); border-color: #581c87; }
+.pulser { background: linear-gradient(135deg, #065f46, #022c22); border-color: #047857; }
+.asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
+
+.explorado {
+    border-color: #334155;
+}
+
+.no-explorado {
+    background: #05050a !important;
+    border-style: dashed;
+    opacity: 0.4;
+}
+.no-explorado * { display: none; }
+.no-explorado::after { content: '🔒'; font-size: 14px; color: #334155; }
+
+/* Sonda del Jugador */
+.probe-here {
+    border: 2px solid var(--cyan-neon) !important;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    background: rgba(0, 240, 255, 0.1) !important;
+}
+
+.probe-icon {
+    font-size: 26px;
+    filter: drop-shadow(0 0 5px var(--cyan-neon));
+    animation: float 2s infinite ease-in-out;
+}
+
+/* Panel de Control Lateral */
+.control-panel {
+    width: 230px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.metric-box {
+    background: #020617;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #1e293b;
+    margin-bottom: 10px;
+}
+
+.metric-box h3 {
+    margin: 0 0 5px 0;
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--cyan-neon);
+}
+
+.btn {
+    background: linear-gradient(90deg, #1d4ed8, #2563eb);
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 5px;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.btn:hover {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+}
+
+.btn-scan {
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+}
+
+.btn-scan:hover {
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+#telemetry-log {
+    font-size: 10px;
+    color: #94a3b8;
+    height: 70px;
+    overflow-y: auto;
+    background: #020617;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #1e293b;
+}
+
+/* Efectos visuales para el algoritmo de búsqueda en 2D */
+.scanning {
+    border: 2px solid var(--amber-neon) !important;
+    background: rgba(245, 158, 11, 0.2) !important;
+}
+
+.signal-found {
+    border: 2px solid var(--purple-neon) !important;
+    box-shadow: 0 0 20px var(--purple-neon) !important;
+    animation: pulse-signal 1s infinite alternate;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes pulse-signal {
+    from { transform: scale(1); }
+    to { transform: scale(1.08); }
+}
