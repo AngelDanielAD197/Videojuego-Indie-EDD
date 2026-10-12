@@ -1,23 +1,26 @@
 const FILAS = 5;
 const COLS = 5;
 
-let mapaEventos = [];    // Almacena lo que hay en cada [fila][columna]
+let mapaSectores = [];   // Biomas variados ([fila][columna])
+let mapaEventos = [];    // Eventos ocultos
 let mapaRevelado = [];   // Niebla de guerra
 let sondaFila = 0;
 let sondaCol = 0;
 let exoplanetasEncontrados = 0;
 let juegoTerminado = false;
 
-// Coordenadas fijas del Agujero Negro y descripciones científicas
 let agujeroNegroFila = 0;
 let agujeroNegroCol = 0;
 
+const tiposBioma = ["vacio", "nebulosa", "asteroides", "estrellas"];
+
 const descripcionesCientificas = {
-    vacio: "Sector de vacío cósmico estable. Radiación de fondo normal.",
-    nebulosa: "Nebulosa de alta densidad. Interferencias iónicas detectadas.",
-    asteroides: "Cinturón de fragmentos rocosos. Precaución en la navegación.",
-    exoplaneta: "¡Planeta rocoso detectado! Atmósfera rica en datos científicos.",
-    agujero_negro: "⚠️ ¡ADVERTENCIA! Singularidad gravitacional detectada."
+    vacio: "Vacío cósmico: Región de baja densidad de materia, fría y silenciosa.",
+    nebulosa: "Nebulosa estelar: Cúmulo masivo de gas ionizado y polvo cósmico interestelar en expansión.",
+    asteroides: "Cinturón de asteroides: Fragmentos rocosos primordiales y remanentes planetesimales.",
+    estrellas: "Cúmulo estelar: Región densa con protoestrellas jóvenes y alta emisión lumínica.",
+    exoplaneta: "Exoplaneta confirmado: Mundo rocoso con potencial biológico y datos estelares únicos.",
+    agujero_negro: "⚠️ ¡ADVERTENCIA! Singularidad gravitacional de masa estelar detectada."
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -33,12 +36,21 @@ function iniciarJuego() {
     const modal = document.getElementById('game-modal');
     if (modal) modal.classList.add('hidden');
 
-    mapaEventos = Array(FILAS).fill().map(() => Array(COLS).fill("vacio"));
+    mapaSectores = Array(FILAS).fill().map(() => Array(COLS).fill("vacio"));
+    mapaEventos = Array(FILAS).fill().map(() => Array(COLS).fill(""));
     mapaRevelado = Array(FILAS).fill().map(() => Array(COLS).fill(false));
 
     mapaRevelado[0][0] = true;
 
-    // Colocar el Agujero Negro en una posición aleatoria (lejos de [0][0])
+    // Generar biomas variados para que el mapa no se sienta vacío
+    for (let f = 0; f < FILAS; f++) {
+        for (let c = 0; c < COLS; c++) {
+            let randomIndex = Math.floor(Math.random() * tiposBioma.length);
+            mapaSectores[f][c] = tiposBioma[randomIndex];
+        }
+    }
+
+    // Ubicar Agujero Negro lejos de [0][0]
     do {
         agujeroNegroFila = Math.floor(Math.random() * FILAS);
         agujeroNegroCol = Math.floor(Math.random() * COLS);
@@ -49,8 +61,8 @@ function iniciarJuego() {
     // Colocar 3 Exoplanetas
     colocarEnMatriz("exoplaneta", 3);
 
-    logTelemetria("Misión iniciada. Escanea el sector para calcular peligros.");
-    actualizarPanelCientifico("vacio");
+    logTelemetria("Misión iniciada. Explora el cuadrante estelar.");
+    actualizarPanelCientifico(mapaSectores[0][0]);
     renderizarMapa();
 }
 
@@ -59,7 +71,7 @@ function colocarEnMatriz(tipo, cantidad) {
     while (colocados < cantidad) {
         let f = Math.floor(Math.random() * FILAS);
         let c = Math.floor(Math.random() * COLS);
-        if (!(f === 0 && c === 0) && mapaEventos[f][c] === "vacio") {
+        if (!(f === 0 && c === 0) && mapaEventos[f][c] === "") {
             mapaEventos[f][c] = tipo;
             colocados++;
         }
@@ -76,9 +88,10 @@ function renderizarMapa() {
             const celda = document.createElement('div');
             const esJugador = (f === sondaFila && c === sondaCol);
             const estaRevelado = mapaRevelado[f][c];
+            const bioma = mapaSectores[f][c];
 
             celda.id = `sector-${f}-${c}`;
-            celda.className = 'sector';
+            celda.className = `sector ${bioma}`;
 
             let contenidoHTML = `<span class="coords">[${f}][${c}]</span>`;
 
@@ -86,19 +99,25 @@ function renderizarMapa() {
                 celda.classList.add('no-explorado');
             } else {
                 let evento = mapaEventos[f][c];
-                if (evento === "exoplaneta") {
-                    contenidoHTML += `<span>🪐</span>`;
+                
+                // Iconos visuales según el bioma o el evento descubierto
+                if (evento === "exoplaneta" || evento === "recolectado") {
+                    contenidoHTML += `<span>🪐</span>`; // Muestra el exoplaneta descubierto o ya recolectado
                 } else if (evento === "agujero_negro" && juegoTerminado) {
                     contenidoHTML += `<span>🕳️</span>`;
                 } else {
-                    contenidoHTML += `<span style="color: #475569;">·</span>`;
+                    // Mostrar un icono ambiental sutil según el bioma si no hay evento especial
+                    if (bioma === "nebulosa") contenidoHTML += `<span style="opacity:0.6;">🌌</span>`;
+                    else if (bioma === "asteroides") contenidoHTML += `<span style="opacity:0.6;">🪨</span>`;
+                    else if (bioma === "estrellas") contenidoHTML += `<span style="opacity:0.6;">✨</span>`;
+                    else contenidoHTML += `<span style="color: #475569;">·</span>`;
                 }
             }
 
-            // Si la sonda está aquí, agregamos el icono encima sin borrar el fondo
+            // Si la sonda está en esta casilla, se dibuja su icono sin tapar el contenido de fondo
             if (esJugador) {
                 celda.classList.add('probe-here');
-                contenidoHTML += `<span style="position: absolute; font-size: 16px; bottom: 2px; right: 2px;">🛰️</span>`;
+                contenidoHTML += `<span style="position: absolute; font-size: 15px; bottom: 2px; right: 2px;">🛰️</span>`;
             }
 
             celda.innerHTML = contenidoHTML;
@@ -122,6 +141,7 @@ function moverSonda(df, dc) {
         mapaRevelado[sondaFila][sondaCol] = true;
 
         let eventoActual = mapaEventos[sondaFila][sondaCol];
+        let biomaActual = mapaSectores[sondaFila][sondaCol];
         logTelemetria(`Movimiento a [${sondaFila}][${sondaCol}]`);
 
         if (eventoActual === "agujero_negro") {
@@ -130,7 +150,7 @@ function moverSonda(df, dc) {
             actualizarPanelCientifico("agujero_negro");
             mostrarModal("💥 ¡Destrucción Total!", "La sonda fue tragada por la singularidad del Agujero Negro.");
         } else if (eventoActual === "exoplaneta") {
-            mapaEventos[sondaFila][sondaCol] = "vacio";
+            mapaEventos[sondaFila][sondaCol] = "recolectado"; // Marca como encontrado pero mantiene el icono en el mapa
             exoplanetasEncontrados++;
             logTelemetria(`<b>¡Exoplaneta 🪐 rescatado! (${exoplanetasEncontrados}/3)</b>`);
             actualizarPanelCientifico("exoplaneta");
@@ -141,7 +161,7 @@ function moverSonda(df, dc) {
                 mostrarModal("🎉 ¡Misión Exitosa!", "¡Has recolectado todos los exoplanetas y analizado el cuadrante!");
             }
         } else {
-            actualizarPanelCientifico("vacio");
+            actualizarPanelCientifico(biomaActual);
         }
 
         renderizarMapa();
@@ -150,10 +170,10 @@ function moverSonda(df, dc) {
     }
 }
 
-function actualizarPanelCientifico(tipo) {
+function actualizarPanelCientifico(clave) {
     const descBox = document.getElementById('science-desc');
-    if (descBox && descripcionesCientificas[tipo]) {
-        descBox.innerText = descripcionesCientificas[tipo];
+    if (descBox && descripcionesCientificas[clave]) {
+        descBox.innerText = descripcionesCientificas[clave];
     }
 }
 
@@ -171,7 +191,6 @@ async function ejecutarEscaneoRadar2D() {
         }
     }
 
-    // Cálculo matemático de distancia (Distancia Manhattan: |x1 - x2| + |y1 - y2|)
     let distanciaFila = Math.abs(sondaFila - agujeroNegroFila);
     let distanciaCol = Math.abs(sondaCol - agujeroNegroCol);
     let distanciaTotal = distanciaFila + distanciaCol;
@@ -183,7 +202,7 @@ async function ejecutarEscaneoRadar2D() {
     } else if (distanciaTotal <= 2) {
         logTelemetria(`⚠️ Radar: Radiación gravitacional moderada a ${distanciaTotal} sectores.`);
     } else {
-        logTelemetria(`📡 Radar: Sector despejado. Agujero negro a ${distanciaTotal} sectores de distancia.`);
+        logTelemetria(`📡 Radar: Sector despejado. Agujero negro a ${distanciaTotal} sectores.`);
     }
 }
 
