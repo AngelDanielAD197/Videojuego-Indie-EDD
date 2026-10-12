@@ -76,7 +76,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
     box-sizing: border-box;
     border: 1px solid #1e293b;
 }
@@ -89,11 +89,6 @@ h1 {
     color: #475569;
     font-weight: bold;
 }
-
-/* Biomas de sectores */
-.vacio { background: #090d16; }
-.nebulosa { background: linear-gradient(135deg, #3b0764, #1e1b4b); border-color: #581c87; }
-.asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
 
 /* Niebla de guerra */
 .no-explorado {
@@ -111,10 +106,6 @@ h1 {
     background: rgba(0, 240, 255, 0.15) !important;
 }
 
-.probe-icon {
-    font-size: 22px;
-}
-
 /* Panel de Control Lateral */
 .control-panel {
     width: 100%;
@@ -128,7 +119,6 @@ h1 {
     padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid #1e293b;
-    margin-bottom: 6px;
 }
 
 .metric-box h3 {
@@ -142,6 +132,17 @@ h1 {
     font-size: 13px;
     font-weight: bold;
     color: var(--cyan-neon);
+}
+
+.science-box {
+    border-color: #3b82f6;
+    background: rgba(30, 58, 138, 0.2);
+}
+
+.science-text {
+    font-size: 11px;
+    color: #93c5fd;
+    line-height: 1.2;
 }
 
 .btn {
@@ -163,9 +164,9 @@ h1 {
 }
 
 #telemetry-log {
-    font-size: 9px;
+    font-size: 10px;
     color: #94a3b8;
-    height: 50px;
+    height: 45px;
     overflow-y: auto;
     background: #020617;
     padding: 6px;
@@ -233,7 +234,6 @@ h1 {
 
 .modal-content h2 { margin-top: 0; color: var(--cyan-neon); }
 
-/* Animaciones del Radar */
 .scanning {
     border: 2px solid var(--amber-neon) !important;
     background: rgba(245, 158, 11, 0.2) !important;
