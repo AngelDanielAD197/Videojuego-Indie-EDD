@@ -9,7 +9,7 @@
 <body>
 
     <h1>Sonda Astrofísica 2D</h1>
-    <div class="subtitle">Navegación por Matriz [5x5] • Usa <b>WASD</b> o <b>FLECHAS</b></div>
+    <div class="subtitle">Navegación por Matriz [5x5] • Usa controles táctiles o teclado</div>
 
     <div class="dashboard">
         <!-- Mapa de Sectores (Matriz) -->
@@ -36,6 +36,16 @@
 
             <button class="btn btn-scan" onclick="ejecutarBusqueda2D()">📡 Escanear Anomalía (Algoritmo 2D)</button>
             <button class="btn" onclick="reiniciarMision()">🔄 Reiniciar Mapa</button>
+        </div>
+    </div>
+
+    <!-- Controles Táctiles para Teléfono -->
+    <div class="mobile-controls">
+        <button class="d-btn" onclick="moverSonda(-1, 0)">⬆️</button>
+        <div class="d-row">
+            <button class="d-btn" onclick="moverSonda(0, -1)">⬅️</button>
+            <button class="d-btn" onclick="moverSonda(1, 0)">⬇️</button>
+            <button class="d-btn" onclick="moverSonda(0, 1)">➡️</button>
         </div>
     </div>
 
