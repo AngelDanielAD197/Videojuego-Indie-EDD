@@ -14,52 +14,60 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 100vh;
     margin: 0;
-    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
     user-select: none;
 }
 
 h1 {
-    margin: 0 0 5px 0;
+    margin: 5px 0 2px 0;
     color: var(--cyan-neon);
     text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
-    font-size: 24px;
-    letter-spacing: 2px;
+    font-size: 20px;
+    letter-spacing: 1px;
+    text-align: center;
 }
 
 .subtitle {
     color: #64748b;
-    margin-bottom: 20px;
-    font-size: 13px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    text-align: center;
 }
 
 .dashboard {
     display: flex;
-    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     background: var(--panel-bg);
-    padding: 20px;
+    padding: 12px;
     border-radius: 12px;
     border: 1px solid #1e3a8a;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 240, 255, 0.05);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
 }
 
-/* Matriz 5x5 Estelar */
+/* Matriz 5x5 Estelar adaptable */
 #star-map {
     display: grid;
-    grid-template-columns: repeat(5, 75px);
-    grid-template-rows: repeat(5, 75px);
-    gap: 6px;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 4px;
     background: #020617;
-    padding: 10px;
+    padding: 8px;
     border-radius: 8px;
     border: 1px solid #1e293b;
 }
 
 .sector {
-    width: 75px;
-    height: 75px;
+    width: 60px;
+    height: 60px;
     background: #0f172a;
     border-radius: 6px;
     position: relative;
@@ -67,17 +75,16 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    transition: all 0.2s ease;
+    font-size: 16px;
     box-sizing: border-box;
     border: 1px solid #1e293b;
 }
 
 .sector .coords {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    font-size: 8px;
+    top: 2px;
+    left: 2px;
+    font-size: 7px;
     color: #475569;
     font-weight: bold;
 }
@@ -88,56 +95,51 @@ h1 {
 .pulser { background: linear-gradient(135deg, #065f46, #022c22); border-color: #047857; }
 .asteroides { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; }
 
-.explorado {
-    border-color: #334155;
-}
-
 .no-explorado {
     background: #05050a !important;
     border-style: dashed;
     opacity: 0.4;
 }
 .no-explorado * { display: none; }
-.no-explorado::after { content: '🔒'; font-size: 14px; color: #334155; }
+.no-explorado::after { content: '🔒'; font-size: 12px; color: #334155; }
 
 /* Sonda del Jugador */
 .probe-here {
     border: 2px solid var(--cyan-neon) !important;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
     background: rgba(0, 240, 255, 0.1) !important;
 }
 
 .probe-icon {
-    font-size: 26px;
+    font-size: 20px;
     filter: drop-shadow(0 0 5px var(--cyan-neon));
-    animation: float 2s infinite ease-in-out;
 }
 
 /* Panel de Control Lateral */
 .control-panel {
-    width: 230px;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 8px;
 }
 
 .metric-box {
     background: #020617;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid #1e293b;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .metric-box h3 {
-    margin: 0 0 5px 0;
-    font-size: 11px;
+    margin: 0 0 3px 0;
+    font-size: 10px;
     color: #64748b;
     text-transform: uppercase;
 }
 
 .metric-value {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: var(--cyan-neon);
 }
@@ -151,37 +153,61 @@ h1 {
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 5px;
     text-transform: uppercase;
     font-size: 11px;
-}
-
-.btn:hover {
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+    width: 100%;
 }
 
 .btn-scan {
     background: linear-gradient(90deg, #7c3aed, #a855f7);
 }
 
-.btn-scan:hover {
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-}
-
 #telemetry-log {
-    font-size: 10px;
+    font-size: 9px;
     color: #94a3b8;
-    height: 70px;
+    height: 50px;
     overflow-y: auto;
     background: #020617;
-    padding: 8px;
+    padding: 6px;
     border-radius: 4px;
     border: 1px solid #1e293b;
 }
 
-/* Efectos visuales para el algoritmo de búsqueda en 2D */
+/* Controles Táctiles en Pantalla bien centrados */
+.mobile-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    width: 100%;
+}
+
+.d-row {
+    display: flex;
+    gap: 12px;
+}
+
+.d-btn {
+    background: #0b1329;
+    border: 1px solid var(--cyan-neon);
+    color: white;
+    font-size: 22px;
+    width: 65px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+.d-btn:active {
+    background: var(--cyan-neon);
+    color: #030712;
+}
+
+/* Animaciones */
 .scanning {
     border: 2px solid var(--amber-neon) !important;
     background: rgba(245, 158, 11, 0.2) !important;
@@ -189,60 +215,5 @@ h1 {
 
 .signal-found {
     border: 2px solid var(--purple-neon) !important;
-    box-shadow: 0 0 20px var(--purple-neon) !important;
-    animation: pulse-signal 1s infinite alternate;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-}
-
-@keyframes pulse-signal {
-    from { transform: scale(1); }
-    to { transform: scale(1.08); }
-}
-
-/* Controles para pantalla táctil */
-.mobile-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin-top: 15px;
-}
-
-.d-row {
-    display: flex;
-    gap: 8px;
-}
-
-.d-btn {
-    background: #1e293b;
-    border: 1px solid #00f0ff;
-    color: white;
-    font-size: 20px;
-    width: 60px;
-    height: 50px;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
-}
-
-.d-btn:active {
-    background: #00f0ff;
-    color: #030712;
-}
-
-/* Ajuste general para que se adapte mejor a celulares */
-@media (max-width: 768px) {
-    .dashboard {
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-    }
-    .control-panel {
-        width: 100%;
-        max-width: 375px;
-    }
+    box-shadow: 0 0 15px var(--purple-neon) !important;
 }
