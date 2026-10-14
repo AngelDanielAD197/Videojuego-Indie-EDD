@@ -1,53 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interestelar Space • Buscaminas Espacial</title>
-  <link rel="stylesheet" href="style.css?v=4.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videojuego Indie Espacial 2D</title>
+
+    <!-- Librería Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="style.css?v=12.0">
 </head>
 <body>
 
-  <div class="game-container">
-    
-    <!-- ENCABEZADO PRINCIPAL -->
-    <header class="game-header">
-      <h1>Interestelar Space</h1>
-      <p>• Encuentra 🪐 Exoplanetas y evita el Agujero Negro</p>
-    </header>
+    <!-- espacio profundo con Three.js -->
+    <canvas id="space-canvas"></canvas>
 
-    <!-- COLUMNA IZQUIERDA: EL MAPA ESTELAR (5x5) -->
-    <div class="star-map-wrapper">
-      <div class="star-map" id="starMap">
-        <!-- Las 25 celdas se generan dinámicamente desde tu script.js -->
-      </div>
+    <h1>Mision I.S.A.A.C VI</h1>
+    <div class="subtitle"></div> • Rescata Exoplanetas y evita el Agujero Negro</div>
+
+    <div class="dashboard">
+        <!-- Mapa espacial (matriz)-->
+        <div id="star-map"></div>
+
+        <!-- Panel de juego -->
+        <div class="control-panel">
+            <div class="metric-box">
+                <h3>Exoplanetas</h3>
+                <div class="metric-value" id="score-val">0 / 3 Encontrados</div>
+            </div>
+
+            <div class="metric-box">
+                <h3>Coordenadas Actuales</h3>
+                <div class="metric-value" id="coords-val">[0][0]</div>
+            </div>
+
+            <!-- Pestaña de Análisis Científico -->
+            <div class="metric-box science-box" id="science-container">
+                <h3>Datos Curiosos e Informacion</h3>
+                <div id="science-desc" class="science-text">Estación base inicial</div>
+            </div>
+
+            <div class="metric-box">
+                <h3>Sucesos de Partida</h3>
+                <div id="telemetry-log">> Inicie exploracion</div>
+            </div>
+
+            <button class="btn btn-scan" onclick="ejecutarEscaneoRadar2D()">📡 RADAR DE PELIGRO: </button>
+            <button class="btn" onclick="reiniciarJuego()">🔄 Reiniciar Mision</button>
+        </div>
     </div>
 
-    <!-- COLUMNA DERECHA: PANELES DE TELEMETRÍA Y CONTROL -->
-    <div class="telemetry-sidebar">
-      
-      <!-- Panel de Exoplanetas -->
-      <div class="panel-card">
-        <h3>Exoplanetas</h3>
-        <div class="panel-value" id="exoplanetCount">0 / 3 Encontrados</div>
-      </div>
-
-      <!-- Panel de Coordenadas -->
-      <div class="panel-card">
-        <h3>Coordenadas Actuales</h3>
-        <div class="panel-value" id="currentCoords">[0][0]</div>
-      </div>
-
-      <!-- Panel de Análisis Científico -->
-      <div class="panel-card scientific-analysis">
-        <h3>Análisis Científico</h3>
-        <p id="scientificText">✨ Cúmulo estelar: Región densa con protoestrellas jóvenes y alta emisión lumínica.</p>
-      </div>
-
+    <!-- Controles para Teléfono -->
+    <div class="mobile-controls">
+        <button class="d-btn" onclick="moverSonda(-1, 0)">⬆️</button>
+        <div class="d-row">
+            <button class="d-btn" onclick="moverSonda(0, -1)">⬅️</button>
+            <button class="d-btn" onclick="moverSonda(1, 0)">⬇️</button>
+            <button class="d-btn" onclick="moverSonda(0, 1)">➡️</button>
+        </div>
     </div>
 
-  </div>
+    <!-- LOre del juego -->
+    <div id="lore-modal" class="modal">
+        <div class="modal-content lore-content">
+            <h2 style="color: var(--cyan-neon); margin-top:0;">🌟 BITÁCORA DE MISIÓN</h2>
+            <p id="lore-text" style="font-size: 12px; line-height: 1.5; color: #cbd5e1; text-align: left; margin: 15px 0;">
+                Cargando registros...
+            </p>
+            <button class="btn btn-scan" onclick="cerrarLoreYEmpezar()">🚀 Iniciar Misión</button>
+        </div>
+    </div>
 
-  <script src="script.js"></script>
+    <!-- Modal de Fin de Juego -->
+    <div id="game-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">¡Misión Terminada!</h2>
+            <p id="modal-desc">Descripción...</p>
+            <button class="btn" onclick="reiniciarJuego()">Nueva Partida</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
