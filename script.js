@@ -1,3 +1,6 @@
+// =========================================================================
+// VARIABLES GLOBALES Y CONFIGURACIÓN DEL JUEGO
+// =========================================================================
 const FILAS = 5;
 const COLS = 5;
 
@@ -19,11 +22,106 @@ const descripcionesCientificas = {
     nebulosa: { text: "🟣 Nebulosa estelar: Cúmulo masivo de gas ionizado y polvo cósmico en expansión.", type: "normal" },
     asteroides: { text: "🪨 Cinturón de asteroides: Fragmentos rocosos primordiales y remanentes planetesimales.", type: "normal" },
     estrellas: { text: "✨ Cúmulo estelar: Región densa con protoestrellas jóvenes y alta emisión lumínica.", type: "normal" },
-    exoplaneta: { text: "🪐 ¡EXOPLANETA DESCUBIERTO! Mundo rocoso con potencial biológico y datos estelares únicos.", type: "planet" },
-    agujero_negro: { text: "⚠️ ¡PELIGRO CRÍTICO! Singularidad gravitacional de masa estelar detectada.", type: "danger" }
+    exoplaneta: { text: "🪐 ¡EXOPLANETA DESCUBIERTO! Mundo rocoso con potencial de albergar vida :).", type: "planet" },
+    agujero_negro: { text: "⚠️ ¡PELIGRO CRÍTICO! Señales de singularidad altas", type: "danger" }
 };
 
+
+// =========================================================================
+// LORE / HISTORIA INICIAL
+// =========================================================================
+function cargarLoreInicial() {
+    const anioFuturo = 2326;
+    const mision = "I.S.A.A.C VI";
+    const constelacion = "Sector Orion-D";
+    const agujero = "HALO-X";
+
+    const textoLore = `Estamos en el año <b>${anioFuturo}</b>. Te encuentras al mando de la misión espacial <b>${mision}</b>. ` +
+                      `Tu sonda ha sido desplegada en las profundidades de la constelación <b>${constelacion}</b> con un objetivo crítico: ` +
+                      `rescatar <b>3 exoplanetas</b> habitables en este sector del espacio.<br><br>` +
+                      `Sin embargo, los sensores detectan la presencia de la anomalía gravitacional <b>${agujero}</b>, un agujero negro que lo absorbe todo a su paso. ` +
+                      `Su ubicación exacta es desconocida, pero cuentas con un <b>radar de escaneo</b> para calcular la proximidad de ese agujero antes de que sea demasiado tarde.`;
+
+    const loreTextEl = document.getElementById('lore-text');
+    if (loreTextEl) loreTextEl.innerHTML = textoLore;
+}
+
+function cerrarLoreYEmpezar() {
+    const loreModal = document.getElementById('lore-modal');
+    if (loreModal) loreModal.classList.add('hidden');
+}
+
+// Asegúrate de llamarla correctamente en el evento de carga:
 document.addEventListener("DOMContentLoaded", () => {
+    initSpaceBackground();
+    cargarLoreInicial();
+    iniciarJuego();
+});
+
+
+// =========================================================================
+// FONDO DE ESPACIO PROFUNDO CON THREE.JS (PARTÍCULAS ESTELARES)
+// =========================================================================
+let scene, camera, renderer, starsParticles;
+
+function initSpaceBackground() {
+    const canvas = document.getElementById('space-canvas');
+    if (!canvas) return;
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const starsCount = 1200;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(starsCount * 3);
+
+    for (let i = 0; i < starsCount * 3; i++) {
+        positions[i] = (Math.random() - 0.5) * 50;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({
+        color: 0x00f0ff,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.8
+    });
+
+    starsParticles = new THREE.Points(geometry, material);
+    scene.add(starsParticles);
+
+    window.addEventListener('resize', onWindowResize);
+    animateSpace();
+}
+
+function animateSpace() {
+    requestAnimationFrame(animateSpace);
+    if (starsParticles) {
+        starsParticles.rotation.x += 0.0003;
+        starsParticles.rotation.y += 0.0005;
+    }
+    renderer.render(scene, camera);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+
+// =========================================================================
+// LÓGICA DEL JUEGO (BUSCAMINAS ESPACIAL)
+// =========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    initSpaceBackground();
+    generarLoreAleatorio();
     iniciarJuego();
 });
 
@@ -174,10 +272,8 @@ function actualizarPanelCientifico(clave) {
     if (info) {
         descBox.innerText = info.text;
         
-        // Limpiar clases de estado previo
         containerBox.classList.remove('science-planet', 'science-danger');
 
-        // Aplicar estilo dinámico según el tipo de hallazgo
         if (info.type === "planet") {
             containerBox.classList.add('science-planet');
         } else if (info.type === "danger") {
@@ -204,11 +300,11 @@ async function ejecutarEscaneoRadar2D() {
     let distanciaTotal = distanciaFila + distanciaCol;
 
     if (distanciaTotal === 0) {
-        logTelemetria(`🚨 ¡PELIGRO MÁXIMO! Estás sobre la singularidad.`);
+        logTelemetria(`🚨 ¡PELIGRO MÁXIMO! Esta respirandote en la nuca Coyeye.`);
     } else if (distanciaTotal <= 1) {
-        logTelemetria(`⚠️ ¡Alerta Roja! El Agujero Negro está extremadamente cerca.`);
+        logTelemetria(`⚠️ ¡Alerta Roja! El Agujero Negro está extremadamente cerca Coyeye.`);
     } else if (distanciaTotal <= 2) {
-        logTelemetria(`⚠️ Radar: Radiación gravitacional moderada a ${distanciaTotal} sectores.`);
+        logTelemetria(`⚠️ Radar: El agujero esta a ${distanciaTotal} sectores.`);
     } else {
         logTelemetria(`📡 Radar: Sector despejado. Agujero negro a ${distanciaTotal} sectores.`);
     }
